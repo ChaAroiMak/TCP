@@ -1,7 +1,6 @@
 package server;
 
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -11,7 +10,14 @@ public class TCPServer {
 
     public static void main (String [] args) throws IOException, InterruptedException {
         TCPServer tcpServer = new TCPServer(PORTNUMBER);
-        tcpServer.doSomething();
+
+        if(args.length == 1) {
+            tcpServer.readFile(args[0]);
+            return;
+        } else {
+            tcpServer.doSomething();
+        }
+
 
     }
 
@@ -19,14 +25,34 @@ public class TCPServer {
         this.port = port;  //mit Port an dem er lauschen kann
     }
 
-    private void doSomething() throws IOException, InterruptedException {
+    private void readFile(String fileName) throws IOException {
+        FileOutputStream fos = new FileOutputStream(fileName);
+
+        Socket socket = this.acceptSocket();
+        InputStream is = socket.getInputStream();//input stream raus holen as socket
+
+        int read = 0;
+        do {
+            read = is.read();
+            if(read != -1) {
+                fos.write(read);
+            }
+        } while(read != -1);
+    }
+
+    private Socket acceptSocket() throws IOException {
         ServerSocket srvSocket = new ServerSocket(this.port); //Serverport anlegen
         System.out.println("server socket created");
 
         //Port wird aufgemacht der von außen sichtbar ist, Aufruf blockiert und kommt erst zurück wenn sich ein Client mit Server verbunden hat
-        Socket socket = srvSocket.accept(); //wenn wir accept mehrfach aufrufen kann sich der Server mit mehreren Clients verbinden
+        return srvSocket.accept(); //wenn wir accept mehrfach aufrufen kann sich der Server mit mehreren Clients verbinden
+
+    }
+
+    private void doSomething() throws IOException, InterruptedException {
         System.out.println("client connection accepted");
 
+        Socket socket = this.acceptSocket();
         socket.getInputStream().read(); //Input Stream aus Socket holen und darauf lesen
         System.out.println("read something");
 
