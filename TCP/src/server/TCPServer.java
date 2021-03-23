@@ -15,7 +15,8 @@ public class TCPServer {
             tcpServer.readFile(args[0]);
             return;
         } else {
-            tcpServer.doSomething();
+            //tcpServer.doSomething();
+            tcpServer.receiveSensorDate();
         }
 
 
@@ -23,6 +24,20 @@ public class TCPServer {
 
     TCPServer (int port) { //Konstruktor
         this.port = port;  //mit Port an dem er lauschen kann
+    }
+
+    private void receiveSensorDate() throws IOException {
+        Socket socket = this.acceptSocket();
+        InputStream is = socket.getInputStream(); //is auf dem ich daten einlesen kann
+
+        DataInputStream dais = new DataInputStream(is);
+        long timeStamp = dais.readLong();
+        float value = dais.readFloat();
+        String sensorName = dais.readUTF();
+
+        System.out.println("timeStamp: " + timeStamp +"\n"+
+                              "value: "+ value +"\n"+
+                              "sensorName: " + sensorName);
     }
 
     private void readFile(String fileName) throws IOException {

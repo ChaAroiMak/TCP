@@ -15,6 +15,7 @@ public class TCPClient {
     public static void main(String []args) throws IOException {
         if(args.length < 2) { //wenn Länge der Argumente kleiner als 2 ist fehlt Host/Port
             System.out.println("missing parameters: hostname, portnumber");
+            throw new IOException("missing parameters: hostname, portnumber");
         }
 
         String hostname = args[0];
@@ -31,7 +32,11 @@ public class TCPClient {
         if(fileName != null) {
             tcpClient.copyFile(fileName);
         }else {
-            tcpClient.doSomething();
+            //tcpClient.doSomething();
+            long timeStamp = System.currentTimeMillis();
+            float value = (float)42.0;
+            String sensorName = "Sensor A";
+            tcpClient.sendSensorDate(timeStamp, value,sensorName);
         }
 
         tcpClient.doSomething();
@@ -42,13 +47,26 @@ public class TCPClient {
         this.port = port;
     }
 
+    private void sendSensorDate(long timeStamp, float value, String sensorName) throws IOException {
+        Socket socket = new Socket(this.hostname, this.port);
+
+        OutputStream os = socket.getOutputStream();//nutzen um datum an den server zu senden
+
+        DataOutputStream daos = new DataOutputStream(os);
+        daos.writeLong(timeStamp);
+        daos.writeFloat(value);
+        daos.writeUTF(sensorName);
+
+        daos.close(); //daos schließt automatisch os
+    }
+
     private void copyFile(String fileName) throws IOException {
         Socket socket = new Socket(this.hostname, this.port);//Socket anlegen für Server
         
         //wollen Stream haben um File zu übertragen- fileinput stream eröffnen
         FileInputStream fis = new FileInputStream(fileName);
 
-        OutputStream os = socket.getOutputStream();
+        OutputStream os = socket.getOutputStream(); //zum Bytes versenden
         
         int read = 0;
         do {
